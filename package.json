@@ -7,11 +7,16 @@
     "start": "browser-sync start --server --files \"*.html, *.js, *.css\" --port 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["demo", "2d", "graphics", "animation"],
+  "keywords": [
+    "demo",
+    "2d",
+    "graphics",
+    "animation"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "browser-sync": "^2.29.3"
+    "browser-sync": "^3.0.4"
   }
 }
