@@ -1,107 +1,115 @@
-class Square {
-    constructor(x, y, size) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.targetX = x;
-        this.targetY = y;
-        this.color = '#2196F3'; // Material Blue
-        this.shadowColor = 'rgba(33, 150, 243, 0.3)';
-    }
-
-    draw(ctx) {
-        // Draw shadow
-        ctx.shadowColor = this.shadowColor;
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetY = 4;
-        
-        // Draw square
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
-        
-        // Reset shadow
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-    }
-
-    move(dx, dy) {
-        this.targetX += dx;
-        this.targetY += dy;
-    }
-
-    update() {
-        const speed = 5;
-        const dx = this.targetX - this.x;
-        const dy = this.targetY - this.y;
-        
-        if (Math.abs(dx) > 0.1) {
-            this.x += dx * speed / 100;
-        }
-        if (Math.abs(dy) > 0.1) {
-            this.y += dy * speed / 100;
-        }
-    }
-}
-
-// Initialize canvas
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-// Set canvas size
+// Configuration object for easy parameter management
+const config = {
+    matrix: {
+        size: 4, // 4x4 matrix
+        padding: 100, // Increased padding to make matrix much smaller
+        cellSpacing: 4, // Space between cells
+    },
+    animation: {
+        speed: 0.05, // Base animation speed
+        easing: (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, // Smooth easing function
+    }
+};
+
+// Set canvas size to match container
 function resizeCanvas() {
-    const mainArea = canvas.parentElement;
-    canvas.width = mainArea.clientWidth;
-    canvas.height = mainArea.clientHeight;
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
 }
 
-// Create square
-const square = new Square(canvas.width / 2, canvas.height / 2, 60);
+// Initialize matrix (4x4)
+let matrix = Array(config.matrix.size).fill().map(() => Array(config.matrix.size).fill(0));
+
+// Animation state
+let isAnimating = false;
+let animationProgress = 0;
+let animationDirection = 1; // 1 for forward, -1 for reverse
+
+// Calculate cell size and position
+function getCellSize() {
+    const size = Math.min(
+        (canvas.width - config.matrix.padding * 2) / config.matrix.size,
+        (canvas.height - config.matrix.padding * 2) / config.matrix.size
+    );
+    return size;
+}
+
+// Draw the matrix
+function drawMatrix() {
+    const cellSize = getCellSize();
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw each cell
+    for (let i = 0; i < config.matrix.size; i++) {
+        for (let j = 0; j < config.matrix.size; j++) {
+            let x = config.matrix.padding + j * (cellSize + config.matrix.cellSpacing);
+            const y = config.matrix.padding + i * (cellSize + config.matrix.cellSpacing);
+            
+            // Apply animation offset for columns 2 and 3
+            if (isAnimating && (j === 1 || j === 2)) {
+                const easedProgress = config.animation.easing(animationProgress);
+                const offset = cellSize * easedProgress * (j === 1 ? 1 : -1);
+                x += offset;
+            }
+            
+            // Draw cell
+            ctx.strokeStyle = '#2196F3';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, cellSize, cellSize);
+            
+            // Draw cell content (empty for now)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+        }
+    }
+}
 
 // Animation loop
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    square.update();
-    square.draw(ctx);
-    requestAnimationFrame(animate);
-}
-
-// Handle window resize
-window.addEventListener('resize', () => {
-    resizeCanvas();
-    // Update square position to stay centered
-    square.x = canvas.width / 2;
-    square.y = canvas.height / 2;
-    square.targetX = square.x;
-    square.targetY = square.y;
-});
-
-// Add button event listeners with visual feedback
-const buttons = {
-    up: document.getElementById('up'),
-    down: document.getElementById('down'),
-    left: document.getElementById('left'),
-    right: document.getElementById('right')
-};
-
-Object.entries(buttons).forEach(([direction, button]) => {
-    button.addEventListener('click', () => {
-        const moveAmount = 50;
-        switch(direction) {
-            case 'up': square.move(0, -moveAmount); break;
-            case 'down': square.move(0, moveAmount); break;
-            case 'left': square.move(-moveAmount, 0); break;
-            case 'right': square.move(moveAmount, 0); break;
+    if (isAnimating) {
+        animationProgress += config.animation.speed * animationDirection;
+        
+        if (animationProgress >= 1) {
+            animationProgress = 1;
+            isAnimating = false;
+            // Actually swap the columns in the matrix
+            for (let i = 0; i < config.matrix.size; i++) {
+                [matrix[i][1], matrix[i][2]] = [matrix[i][2], matrix[i][1]];
+            }
+        } else if (animationProgress <= 0) {
+            animationProgress = 0;
+            isAnimating = false;
         }
         
-        // Add click animation
-        button.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            button.style.transform = '';
-        }, 100);
-    });
+        drawMatrix();
+        requestAnimationFrame(animate);
+    }
+}
+
+// Swap columns 2 and 3
+function swapColumns() {
+    if (!isAnimating) {
+        isAnimating = true;
+        animationProgress = 0;
+        animationDirection = 1;
+        animate();
+    }
+}
+
+// Event listeners
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    drawMatrix();
 });
 
-// Initialize
+document.getElementById('swap-columns').addEventListener('click', swapColumns);
+
+// Initial setup
 resizeCanvas();
-animate(); 
+drawMatrix(); 
