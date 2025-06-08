@@ -379,6 +379,16 @@ class MatrixView {
         this.app.ticker.add(animate);
     }
 
+    animatePartialSequence() {
+        // First run the column swap
+        this.animatePartialColumnSwaps();
+        
+        // After the column swap is complete, run the row swap
+        setTimeout(() => {
+            this.animatePartialRowSwaps();
+        }, config.animation.duration * 1000); // Convert seconds to milliseconds
+    }
+
     // Easing function for smooth animation
     easeInOutQuad(t) {
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
@@ -412,4 +422,8 @@ document.getElementById('swap-columns-partial').addEventListener('click', () => 
 
 document.getElementById('swap-rows-partial').addEventListener('click', () => {
     view.animatePartialRowSwaps();
+});
+
+document.getElementById('swap-partial-sequence').addEventListener('click', () => {
+    view.animatePartialSequence();
 }); 
