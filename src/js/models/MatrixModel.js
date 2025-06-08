@@ -13,20 +13,10 @@ export class MatrixModel {
         this.data[3][1] = 1;
     }
 
-    swapColumns(col1, col2) {
-        for (let i = 0; i < this.size; i++) {
-            [this.data[i][col1], this.data[i][col2]] = [this.data[i][col2], this.data[i][col1]];
-        }
-    }
-
     swapCellsByColumns(cellPairs) {
         for (const [row, col] of cellPairs) {
             [this.data[row][col], this.data[row][col + 1]] = [this.data[row][col + 1], this.data[row][col]];
         }
-    }
-
-    swapRows(row1, row2) {
-        [this.data[row1], this.data[row2]] = [this.data[row2], this.data[row1]];
     }
 
     swapCellsByRows(cellPairs) {
