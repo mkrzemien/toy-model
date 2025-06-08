@@ -119,11 +119,29 @@ class MatrixView {
         this.cellsContainer.y = (this.app.screen.height - totalHeight) / 2;
     }
 
-    animateColumnSwap(col1, col2) {
+    animateColumnSwap() {
+        return this.animateCellPairsSwap([[0, 1], [1, 1], [2, 1], [3, 1]]);
+    }
+
+    animateCellPairsSwap(cellPairs) {
         return new Promise(resolve => {
-            const cells1 = this.cells.map(row => row[col1]);
-            const cells2 = this.cells.map(row => row[col2]);
-            const distance = config.matrix.cellSize + config.matrix.spacing;
+            const cells1 = [];
+            const cells2 = [];
+            const distances = [];
+            const startPositions = [];
+
+            // Process each pair to get the cells and their positions
+            cellPairs.forEach(([row, col]) => {
+                if (col < this.model.size - 1) {  // Ensure we don't go out of bounds
+                    cells1.push(this.cells[row][col]);
+                    cells2.push(this.cells[row][col + 1]);
+                    distances.push(config.matrix.cellSize + config.matrix.spacing);
+                    startPositions.push({
+                        x1: col * (config.matrix.cellSize + config.matrix.spacing),
+                        x2: (col + 1) * (config.matrix.cellSize + config.matrix.spacing)
+                    });
+                }
+            });
 
             let progress = 0;
             const animate = (delta) => {
@@ -134,22 +152,26 @@ class MatrixView {
                     this.app.ticker.remove(animate);
                     
                     // Update the model
-                    this.model.swapColumns(col1, col2);
+                    cellPairs.forEach(([row, col]) => {
+                        if (col < this.model.size - 1) {
+                            [this.model.data[row][col], this.model.data[row][col + 1]] = 
+                            [this.model.data[row][col + 1], this.model.data[row][col]];
+                        }
+                    });
                     
                     // Redraw the entire matrix
                     this.createCells();
                     this.centerCellsContainer();
                     resolve();
                 } else {
-                    // Easing function for smooth animation
                     const eased = this.easeInOutQuad(progress);
 
-                    cells1.forEach(cell => {
-                        cell.x = col1 * (config.matrix.cellSize + config.matrix.spacing) + distance * eased;
+                    cells1.forEach((cell, index) => {
+                        cell.x = startPositions[index].x1 + distances[index] * eased;
                     });
 
-                    cells2.forEach(cell => {
-                        cell.x = col2 * (config.matrix.cellSize + config.matrix.spacing) - distance * eased;
+                    cells2.forEach((cell, index) => {
+                        cell.x = startPositions[index].x2 - distances[index] * eased;
                     });
                 }
             };
@@ -198,47 +220,8 @@ class MatrixView {
     }
 
     animateMultipleColumnSwaps(swaps) {
-        return new Promise(resolve => {
-            const cells = swaps.map(([col1, col2]) => ({
-                col1: this.cells.map(row => row[col1]),
-                col2: this.cells.map(row => row[col2]),
-                distance: config.matrix.cellSize + config.matrix.spacing,
-                col1Pos: col1 * (config.matrix.cellSize + config.matrix.spacing),
-                col2Pos: col2 * (config.matrix.cellSize + config.matrix.spacing)
-            }));
-
-            let progress = 0;
-            const animate = (delta) => {
-                progress += delta / 60 / config.animation.duration;
-                
-                if (progress >= 1) {
-                    progress = 1;
-                    this.app.ticker.remove(animate);
-                    
-                    // Update the model
-                    swaps.forEach(([col1, col2]) => this.model.swapColumns(col1, col2));
-                    
-                    // Redraw the entire matrix
-                    this.createCells();
-                    this.centerCellsContainer();
-                    resolve();
-                } else {
-                    const eased = this.easeInOutQuad(progress);
-
-                    cells.forEach(({ col1, col2, distance, col1Pos, col2Pos }) => {
-                        col1.forEach(cell => {
-                            cell.x = col1Pos + distance * eased;
-                        });
-                        col2.forEach(cell => {
-                            cell.x = col2Pos - distance * eased;
-                        });
-                    });
-                }
-            };
-
-            this.app.ticker.add(animate);
-        });
-    }
+        return this.animateCellPairsSwap([[0, 0], [1, 0], [2, 0], [3, 0], [0, 2], [1, 2], [2, 2], [3, 2]]);
+     }
 
     animateMultipleRowSwaps(swaps) {
         return new Promise(resolve => {
@@ -427,11 +410,11 @@ async function chainAnimations(animations, pauseDuration = 0.05) {
 
 // Event handling
 document.getElementById('swap-columns-h').addEventListener('click', () => {
-    chainAnimations([() => view.animateColumnSwap(1, 2)]);
+    chainAnimations([() => view.animateColumnSwap()]);
 });
 
 document.getElementById('swap-rows-h').addEventListener('click', () => {
-    chainAnimations([() => view.animateRowSwap(1, 2)]);
+    chainAnimations([() => view.animateRowSwap()]);
 });
 
 document.getElementById('swap-columns-z').addEventListener('click', () => {
@@ -460,32 +443,32 @@ document.getElementById('composite-cz').addEventListener('click', () => {
 // Composite action handlers
 document.getElementById('composite-h').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateColumnSwap(1, 2),
-        () => view.animateRowSwap(1, 2)
+        () => view.animateColumnSwap(),
+        () => view.animateRowSwap()
     ]);
 });
 
 document.getElementById('composite-nx').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateColumnSwap(1, 2),
+        () => view.animateColumnSwap(),
         () => view.animateMultipleColumnSwaps([[0, 1], [2, 3]]),
-        () => view.animateColumnSwap(1, 2)
+        () => view.animateColumnSwap()
     ]);
 });
 
 document.getElementById('composite-ny').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateRowSwap(1, 2),
+        () => view.animateRowSwap(),
         () => view.animateMultipleRowSwaps([[0, 1], [2, 3]]),
-        () => view.animateRowSwap(1, 2)
+        () => view.animateRowSwap()
     ]);
 });
 
 document.getElementById('composite-cx').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateColumnSwap(1, 2),
+        () => view.animateColumnSwap(),
         () => view.animatePartialColumnSwaps(),
         () => view.animatePartialRowSwaps(),
-        () => view.animateColumnSwap(1, 2)
+        () => view.animateColumnSwap()
     ]);
 }); 
