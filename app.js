@@ -8,8 +8,11 @@ const config = {
     },
     colors: {
         background: 0xFAFAFA,
-        cell: 0xFFFFFF,
-        border: 0x2196F3
+        cell: {
+            zero: 0xFFFFFF,  // Light color for 0
+            one: 0x1976D2,   // Dark color for 1
+            border: 0x2196F3
+        }
     },
     animation: {
         duration: 0.5 // seconds
@@ -21,6 +24,8 @@ class MatrixModel {
     constructor(size) {
         this.size = size;
         this.data = Array(size).fill().map(() => Array(size).fill(0));
+        // Initialize a single cell in the second column to 1
+        this.data[1][1] = 1; // Set the middle cell in the second column to 1
     }
 
     swapColumns(col1, col2) {
@@ -55,17 +60,7 @@ class MatrixView {
         this.cellsContainer = new PIXI.Container();
         this.app.stage.addChild(this.cellsContainer);
 
-        // Create cells
-        for (let i = 0; i < this.model.size; i++) {
-            this.cells[i] = [];
-            for (let j = 0; j < this.model.size; j++) {
-                const cell = this.createCell(i, j);
-                this.cellsContainer.addChild(cell);
-                this.cells[i][j] = cell;
-            }
-        }
-
-        // Center the cells container
+        this.createCells();
         this.centerCellsContainer();
 
         // Handle window resize
@@ -76,12 +71,29 @@ class MatrixView {
         resizeObserver.observe(this.container);
     }
 
+    createCells() {
+        // Clear existing cells
+        this.cellsContainer.removeChildren();
+        this.cells = [];
+
+        // Create new cells
+        for (let i = 0; i < this.model.size; i++) {
+            this.cells[i] = [];
+            for (let j = 0; j < this.model.size; j++) {
+                const cell = this.createCell(i, j);
+                this.cellsContainer.addChild(cell);
+                this.cells[i][j] = cell;
+            }
+        }
+    }
+
     createCell(row, col) {
         const cell = new PIXI.Graphics();
+        const value = this.model.data[row][col];
         
-        // Draw cell background
-        cell.beginFill(config.colors.cell);
-        cell.lineStyle(2, config.colors.border);
+        // Draw cell background based on value
+        cell.beginFill(value === 1 ? config.colors.cell.one : config.colors.cell.zero);
+        cell.lineStyle(2, config.colors.cell.border);
         cell.drawRect(0, 0, config.matrix.cellSize, config.matrix.cellSize);
         cell.endFill();
 
@@ -113,18 +125,25 @@ class MatrixView {
             if (progress >= 1) {
                 progress = 1;
                 this.app.ticker.remove(animate);
+                
+                // Update the model
+                this.model.swapColumns(col1, col2);
+                
+                // Redraw the entire matrix
+                this.createCells();
+                this.centerCellsContainer();
+            } else {
+                // Easing function for smooth animation
+                const eased = this.easeInOutQuad(progress);
+
+                cells1.forEach(cell => {
+                    cell.x = col1 * (config.matrix.cellSize + config.matrix.spacing) + distance * eased;
+                });
+
+                cells2.forEach(cell => {
+                    cell.x = col2 * (config.matrix.cellSize + config.matrix.spacing) - distance * eased;
+                });
             }
-
-            // Easing function for smooth animation
-            const eased = this.easeInOutQuad(progress);
-
-            cells1.forEach(cell => {
-                cell.x = col1 * (config.matrix.cellSize + config.matrix.spacing) + distance * eased;
-            });
-
-            cells2.forEach(cell => {
-                cell.x = col2 * (config.matrix.cellSize + config.matrix.spacing) - distance * eased;
-            });
         };
 
         this.app.ticker.add(animate);
@@ -143,5 +162,4 @@ const view = new MatrixView(model, document.getElementById('pixi-container'));
 // Event handling
 document.getElementById('swap-columns').addEventListener('click', () => {
     view.animateSwap(1, 2);
-    model.swapColumns(1, 2);
 }); 
