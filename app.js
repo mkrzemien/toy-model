@@ -475,34 +475,50 @@ document.getElementById('swap-partial-sequence').addEventListener('click', async
     setButtonsEnabled(true);
 });
 
+// Utility function for chaining animations with pauses
+async function chainAnimations(animations, pauseDuration = 0.2) {
+    for (const animation of animations) {
+        await animation();
+        await new Promise(resolve => setTimeout(resolve, pauseDuration * 1000));
+    }
+}
+
 // Composite action handlers
 document.getElementById('composite-h').addEventListener('click', async () => {
     setButtonsEnabled(false);
-    await view.animateSwap(1, 2);
-    await view.animateRowSwap(1, 2);
+    await chainAnimations([
+        () => view.animateSwap(1, 2),
+        () => view.animateRowSwap(1, 2)
+    ]);
     setButtonsEnabled(true);
 });
 
 document.getElementById('composite-nx').addEventListener('click', async () => {
     setButtonsEnabled(false);
-    await view.animateSwap(1, 2);
-    await view.animateMultipleColumnSwaps([[0, 1], [2, 3]]);
-    await view.animateSwap(1, 2);
+    await chainAnimations([
+        () => view.animateSwap(1, 2),
+        () => view.animateMultipleColumnSwaps([[0, 1], [2, 3]]),
+        () => view.animateSwap(1, 2)
+    ]);
     setButtonsEnabled(true);
 });
 
 document.getElementById('composite-ny').addEventListener('click', async () => {
     setButtonsEnabled(false);
-    await view.animateRowSwap(1, 2);
-    await view.animateMultipleRowSwaps([[0, 1], [2, 3]]);
-    await view.animateRowSwap(1, 2);
+    await chainAnimations([
+        () => view.animateRowSwap(1, 2),
+        () => view.animateMultipleRowSwaps([[0, 1], [2, 3]]),
+        () => view.animateRowSwap(1, 2)
+    ]);
     setButtonsEnabled(true);
 });
 
 document.getElementById('composite-cx').addEventListener('click', async () => {
     setButtonsEnabled(false);
-    await view.animateSwap(1, 2);
-    await view.animatePartialSequence();
-    await view.animateSwap(1, 2);
+    await chainAnimations([
+        () => view.animateSwap(1, 2),
+        () => view.animatePartialSequence(),
+        () => view.animateSwap(1, 2)
+    ]);
     setButtonsEnabled(true);
 }); 
