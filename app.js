@@ -396,10 +396,12 @@ class MatrixView {
     }
 
     animatePartialSequence() {
-        // First run the column swap and wait for it to complete
-        this.animatePartialColumnSwaps().then(() => {
-            // After column swap completes, run the row swap
-            this.animatePartialRowSwaps();
+        return new Promise(resolve => {
+            // First run the column swap and wait for it to complete
+            this.animatePartialColumnSwaps().then(() => {
+                // After column swap completes, run the row swap
+                this.animatePartialRowSwaps().then(resolve);
+            });
         });
     }
 
@@ -413,31 +415,94 @@ class MatrixView {
 const model = new MatrixModel(config.matrix.size);
 const view = new MatrixView(model, document.getElementById('pixi-container'));
 
+// Button state management
+function setButtonsEnabled(enabled) {
+    const buttons = [
+        'swap-columns',
+        'swap-rows',
+        'swap-columns-pairs',
+        'swap-rows-pairs',
+        'swap-columns-partial',
+        'swap-rows-partial',
+        'swap-partial-sequence'
+    ];
+    buttons.forEach(id => {
+        const button = document.getElementById(id);
+        button.disabled = !enabled;
+    });
+}
+
 // Event handling
-document.getElementById('swap-columns').addEventListener('click', () => {
-    view.animateSwap(1, 2);
+document.getElementById('swap-columns').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateSwap(1, 2);
+    setButtonsEnabled(true);
 });
 
-document.getElementById('swap-rows').addEventListener('click', () => {
-    view.animateRowSwap(1, 2);
+document.getElementById('swap-rows').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateRowSwap(1, 2);
+    setButtonsEnabled(true);
 });
 
-document.getElementById('swap-columns-pairs').addEventListener('click', () => {
-    view.animateMultipleColumnSwaps([[0, 1], [2, 3]]);
+document.getElementById('swap-columns-pairs').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateMultipleColumnSwaps([[0, 1], [2, 3]]);
+    setButtonsEnabled(true);
 });
 
-document.getElementById('swap-rows-pairs').addEventListener('click', () => {
-    view.animateMultipleRowSwaps([[0, 1], [2, 3]]);
+document.getElementById('swap-rows-pairs').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateMultipleRowSwaps([[0, 1], [2, 3]]);
+    setButtonsEnabled(true);
 });
 
-document.getElementById('swap-columns-partial').addEventListener('click', () => {
-    view.animatePartialColumnSwaps();
+document.getElementById('swap-columns-partial').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animatePartialColumnSwaps();
+    setButtonsEnabled(true);
 });
 
-document.getElementById('swap-rows-partial').addEventListener('click', () => {
-    view.animatePartialRowSwaps();
+document.getElementById('swap-rows-partial').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animatePartialRowSwaps();
+    setButtonsEnabled(true);
 });
 
-document.getElementById('swap-partial-sequence').addEventListener('click', () => {
-    view.animatePartialSequence();
+document.getElementById('swap-partial-sequence').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animatePartialSequence();
+    setButtonsEnabled(true);
+});
+
+// Composite action handlers
+document.getElementById('composite-h').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateSwap(1, 2);
+    await view.animateRowSwap(1, 2);
+    setButtonsEnabled(true);
+});
+
+document.getElementById('composite-nx').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateSwap(1, 2);
+    await view.animateMultipleColumnSwaps([[0, 1], [2, 3]]);
+    await view.animateSwap(1, 2);
+    setButtonsEnabled(true);
+});
+
+document.getElementById('composite-ny').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateRowSwap(1, 2);
+    await view.animateMultipleRowSwaps([[0, 1], [2, 3]]);
+    await view.animateRowSwap(1, 2);
+    setButtonsEnabled(true);
+});
+
+document.getElementById('composite-cx').addEventListener('click', async () => {
+    setButtonsEnabled(false);
+    await view.animateSwap(1, 2);
+    await view.animatePartialSequence();
+    await view.animateSwap(1, 2);
+    setButtonsEnabled(true);
 }); 
