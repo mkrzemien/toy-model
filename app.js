@@ -119,7 +119,7 @@ class MatrixView {
         this.cellsContainer.y = (this.app.screen.height - totalHeight) / 2;
     }
 
-    animateSwap(col1, col2) {
+    animateColumnSwap(col1, col2) {
         return new Promise(resolve => {
             const cells1 = this.cells.map(row => row[col1]);
             const cells2 = this.cells.map(row => row[col2]);
@@ -427,7 +427,7 @@ async function chainAnimations(animations, pauseDuration = 0.05) {
 
 // Event handling
 document.getElementById('swap-columns-h').addEventListener('click', () => {
-    chainAnimations([() => view.animateSwap(1, 2)]);
+    chainAnimations([() => view.animateColumnSwap(1, 2)]);
 });
 
 document.getElementById('swap-rows-h').addEventListener('click', () => {
@@ -460,16 +460,16 @@ document.getElementById('composite-cz').addEventListener('click', () => {
 // Composite action handlers
 document.getElementById('composite-h').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateSwap(1, 2),
+        () => view.animateColumnSwap(1, 2),
         () => view.animateRowSwap(1, 2)
     ]);
 });
 
 document.getElementById('composite-nx').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateSwap(1, 2),
+        () => view.animateColumnSwap(1, 2),
         () => view.animateMultipleColumnSwaps([[0, 1], [2, 3]]),
-        () => view.animateSwap(1, 2)
+        () => view.animateColumnSwap(1, 2)
     ]);
 });
 
@@ -483,9 +483,9 @@ document.getElementById('composite-ny').addEventListener('click', () => {
 
 document.getElementById('composite-cx').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateSwap(1, 2),
+        () => view.animateColumnSwap(1, 2),
         () => view.animatePartialColumnSwaps(),
         () => view.animatePartialRowSwaps(),
-        () => view.animateSwap(1, 2)
+        () => view.animateColumnSwap(1, 2)
     ]);
 }); 
