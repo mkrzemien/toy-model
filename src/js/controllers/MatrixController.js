@@ -96,20 +96,28 @@ export class MatrixController {
     }
 
     async executeScript() {
-        const scriptInput = document.getElementById('script-input').value;
+        const scriptInputElem = document.getElementById('script-input');
+        const scriptInput = scriptInputElem.value;
         const actions = scriptInput.split(/[\s,;]+/).filter(action => action.trim());
+        const validationMessage = document.getElementById('validation-message');
         
         if (actions.length === 0) {
-            alert('Please enter at least one action');
+            validationMessage.textContent = 'Enter at least one action';
+            validationMessage.classList.add('show');
+            scriptInputElem.classList.add('error');
             return;
         }
 
         const invalidActions = actions.filter(action => !this.actionMap[action]);
         if (invalidActions.length > 0) {
-            alert(`Invalid actions found: ${invalidActions.join(', ')}`);
+            validationMessage.textContent = `Invalid actions: ${invalidActions.join(', ')}`;
+            validationMessage.classList.add('show');
+            scriptInputElem.classList.add('error');
             return;
         }
 
+        validationMessage.classList.remove('show');
+        scriptInputElem.classList.remove('error');
         try {
             this.setButtonsEnabled(false);
             for (const action of actions) {
