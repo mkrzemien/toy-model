@@ -119,7 +119,7 @@ class MatrixView {
         this.cellsContainer.y = (this.app.screen.height - totalHeight) / 2;
     }
 
-    animateCellPairColumnSwap(cellPairs) {
+    animateCellColumnSwaps(cellPairs) {
         return new Promise(resolve => {
             const cells1 = [];
             const cells2 = [];
@@ -176,7 +176,7 @@ class MatrixView {
         });
     }
 
-    animateCellPairsRowSwaps(cellPairs) {
+    animateCellRowSwaps(cellPairs) {
         return new Promise(resolve => {
             const cells1 = [];
             const cells2 = [];
@@ -233,28 +233,28 @@ class MatrixView {
         });
     }
 
-    animateColumnSwap() {
-        return this.animateCellPairColumnSwap([[0, 1], [1, 1], [2, 1], [3, 1]]);
+    animateCenterColumnSwaps() {
+        return this.animateCellColumnSwaps([[0, 1], [1, 1], [2, 1], [3, 1]]);
     }
 
-    animateRowSwap() {
-        return this.animateCellPairsRowSwaps([[1, 0], [1, 1], [1, 2], [1, 3]]);
+    animateCenterRowSwaps() {
+        return this.animateCellRowSwaps([[1, 0], [1, 1], [1, 2], [1, 3]]);
     }
 
-    animateMultipleColumnSwaps(swaps) {
-        return this.animateCellPairColumnSwap([[0, 0], [1, 0], [2, 0], [3, 0], [0, 2], [1, 2], [2, 2], [3, 2]]);
+    animateSideColumnSwaps() {
+        return this.animateCellColumnSwaps([[0, 0], [1, 0], [2, 0], [3, 0], [0, 2], [1, 2], [2, 2], [3, 2]]);
      }
 
-    animateMultipleRowSwaps(swaps) {
-        return this.animateCellPairsRowSwaps([[0, 0], [0, 1], [0, 2], [0, 3], [2, 0], [2, 1], [2, 2], [2, 3]]);
+    animateSideRowSwaps() {
+        return this.animateCellRowSwaps([[0, 0], [0, 1], [0, 2], [0, 3], [2, 0], [2, 1], [2, 2], [2, 3]]);
     }
 
     animatePartialColumnSwaps() {
-        return this.animateCellPairColumnSwap([[0, 0], [1, 0], [0, 2], [1, 2]]);
+        return this.animateCellColumnSwaps([[0, 0], [1, 0], [0, 2], [1, 2]]);
     }
 
     animatePartialRowSwaps() {
-        return this.animateCellPairsRowSwaps([[0, 2], [0, 3], [2, 2], [2, 3]]);
+        return this.animateCellRowSwaps([[0, 2], [0, 3], [2, 2], [2, 3]]);
     }
 
     // Easing function for smooth animation
@@ -289,19 +289,19 @@ async function chainAnimations(animations, pauseDuration = 0.05) {
 
 // Event handling
 document.getElementById('swap-columns-h').addEventListener('click', () => {
-    chainAnimations([() => view.animateColumnSwap()]);
+    chainAnimations([() => view.animateCenterColumnSwaps()]);
 });
 
 document.getElementById('swap-rows-h').addEventListener('click', () => {
-    chainAnimations([() => view.animateRowSwap()]);
+    chainAnimations([() => view.animateCenterRowSwaps()]);
 });
 
 document.getElementById('swap-columns-z').addEventListener('click', () => {
-    chainAnimations([() => view.animateMultipleColumnSwaps([[0, 1], [2, 3]])]);
+    chainAnimations([() => view.animateSideColumnSwaps()]);
 });
 
 document.getElementById('swap-rows-z').addEventListener('click', () => {
-    chainAnimations([() => view.animateMultipleRowSwaps([[0, 1], [2, 3]])]);
+    chainAnimations([() => view.animateSideRowSwaps()]);
 });
 
 document.getElementById('swap-columns-p').addEventListener('click', () => {
@@ -322,32 +322,32 @@ document.getElementById('composite-cz').addEventListener('click', () => {
 
 document.getElementById('composite-h').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateColumnSwap(),
-        () => view.animateRowSwap()
+        () => view.animateCenterColumnSwaps(),
+        () => view.animateCenterRowSwaps()
     ]);
 });
 
 document.getElementById('composite-nx').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateColumnSwap(),
-        () => view.animateMultipleColumnSwaps([[0, 1], [2, 3]]),
-        () => view.animateColumnSwap()
+        () => view.animateCenterColumnSwaps(),
+        () => view.animateSideColumnSwaps(),
+        () => view.animateCenterColumnSwaps()
     ]);
 });
 
 document.getElementById('composite-ny').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateRowSwap(),
-        () => view.animateMultipleRowSwaps([[0, 1], [2, 3]]),
-        () => view.animateRowSwap()
+        () => view.animateCenterRowSwaps(),
+        () => view.animateSideRowSwaps(),
+        () => view.animateCenterRowSwaps()
     ]);
 });
 
 document.getElementById('composite-cx').addEventListener('click', () => {
     chainAnimations([
-        () => view.animateColumnSwap(),
+        () => view.animateCenterColumnSwaps(),
         () => view.animatePartialColumnSwaps(),
         () => view.animatePartialRowSwaps(),
-        () => view.animateColumnSwap()
+        () => view.animateCenterColumnSwaps()
     ]);
 }); 
