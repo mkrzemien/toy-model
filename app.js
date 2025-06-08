@@ -1,115 +1,147 @@
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
-// Configuration object for easy parameter management
+// Configuration
 const config = {
     matrix: {
-        size: 4, // 4x4 matrix
-        padding: 100, // Increased padding to make matrix much smaller
-        cellSpacing: 4, // Space between cells
+        size: 4,
+        cellSize: 50,
+        spacing: 5,
+        padding: 100
+    },
+    colors: {
+        background: 0xFAFAFA,
+        cell: 0xFFFFFF,
+        border: 0x2196F3
     },
     animation: {
-        speed: 0.05, // Base animation speed
-        easing: (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, // Smooth easing function
+        duration: 0.5 // seconds
     }
 };
 
-// Set canvas size to match container
-function resizeCanvas() {
-    const container = canvas.parentElement;
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-}
+// Model
+class MatrixModel {
+    constructor(size) {
+        this.size = size;
+        this.data = Array(size).fill().map(() => Array(size).fill(0));
+    }
 
-// Initialize matrix (4x4)
-let matrix = Array(config.matrix.size).fill().map(() => Array(config.matrix.size).fill(0));
-
-// Animation state
-let isAnimating = false;
-let animationProgress = 0;
-let animationDirection = 1; // 1 for forward, -1 for reverse
-
-// Calculate cell size and position
-function getCellSize() {
-    const size = Math.min(
-        (canvas.width - config.matrix.padding * 2) / config.matrix.size,
-        (canvas.height - config.matrix.padding * 2) / config.matrix.size
-    );
-    return size;
-}
-
-// Draw the matrix
-function drawMatrix() {
-    const cellSize = getCellSize();
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw each cell
-    for (let i = 0; i < config.matrix.size; i++) {
-        for (let j = 0; j < config.matrix.size; j++) {
-            let x = config.matrix.padding + j * (cellSize + config.matrix.cellSpacing);
-            const y = config.matrix.padding + i * (cellSize + config.matrix.cellSpacing);
-            
-            // Apply animation offset for columns 2 and 3
-            if (isAnimating && (j === 1 || j === 2)) {
-                const easedProgress = config.animation.easing(animationProgress);
-                const offset = cellSize * easedProgress * (j === 1 ? 1 : -1);
-                x += offset;
-            }
-            
-            // Draw cell
-            ctx.strokeStyle = '#2196F3';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, y, cellSize, cellSize);
-            
-            // Draw cell content (empty for now)
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+    swapColumns(col1, col2) {
+        for (let i = 0; i < this.size; i++) {
+            [this.data[i][col1], this.data[i][col2]] = [this.data[i][col2], this.data[i][col1]];
         }
     }
 }
 
-// Animation loop
-function animate() {
-    if (isAnimating) {
-        animationProgress += config.animation.speed * animationDirection;
-        
-        if (animationProgress >= 1) {
-            animationProgress = 1;
-            isAnimating = false;
-            // Actually swap the columns in the matrix
-            for (let i = 0; i < config.matrix.size; i++) {
-                [matrix[i][1], matrix[i][2]] = [matrix[i][2], matrix[i][1]];
+// View
+class MatrixView {
+    constructor(model, container) {
+        this.model = model;
+        this.container = container;
+        this.cells = [];
+        this.setup();
+    }
+
+    setup() {
+        // Create PIXI Application with explicit size
+        this.app = new PIXI.Application({
+            background: config.colors.background,
+            width: this.container.clientWidth,
+            height: this.container.clientHeight,
+            antialias: true,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true
+        });
+        this.container.appendChild(this.app.view);
+
+        // Create container for cells
+        this.cellsContainer = new PIXI.Container();
+        this.app.stage.addChild(this.cellsContainer);
+
+        // Create cells
+        for (let i = 0; i < this.model.size; i++) {
+            this.cells[i] = [];
+            for (let j = 0; j < this.model.size; j++) {
+                const cell = this.createCell(i, j);
+                this.cellsContainer.addChild(cell);
+                this.cells[i][j] = cell;
             }
-        } else if (animationProgress <= 0) {
-            animationProgress = 0;
-            isAnimating = false;
         }
+
+        // Center the cells container
+        this.centerCellsContainer();
+
+        // Handle window resize
+        const resizeObserver = new ResizeObserver(() => {
+            this.app.renderer.resize(this.container.clientWidth, this.container.clientHeight);
+            this.centerCellsContainer();
+        });
+        resizeObserver.observe(this.container);
+    }
+
+    createCell(row, col) {
+        const cell = new PIXI.Graphics();
         
-        drawMatrix();
-        requestAnimationFrame(animate);
+        // Draw cell background
+        cell.beginFill(config.colors.cell);
+        cell.lineStyle(2, config.colors.border);
+        cell.drawRect(0, 0, config.matrix.cellSize, config.matrix.cellSize);
+        cell.endFill();
+
+        // Position cell
+        cell.x = col * (config.matrix.cellSize + config.matrix.spacing);
+        cell.y = row * (config.matrix.cellSize + config.matrix.spacing);
+
+        return cell;
+    }
+
+    centerCellsContainer() {
+        const totalWidth = this.model.size * (config.matrix.cellSize + config.matrix.spacing) - config.matrix.spacing;
+        const totalHeight = this.model.size * (config.matrix.cellSize + config.matrix.spacing) - config.matrix.spacing;
+        
+        this.cellsContainer.x = (this.app.screen.width - totalWidth) / 2;
+        this.cellsContainer.y = (this.app.screen.height - totalHeight) / 2;
+    }
+
+    animateSwap(col1, col2) {
+        const cells1 = this.cells.map(row => row[col1]);
+        const cells2 = this.cells.map(row => row[col2]);
+        const distance = config.matrix.cellSize + config.matrix.spacing;
+
+        // Animate using PIXI's ticker
+        let progress = 0;
+        const animate = (delta) => {
+            progress += delta / 60 / config.animation.duration;
+            
+            if (progress >= 1) {
+                progress = 1;
+                this.app.ticker.remove(animate);
+            }
+
+            // Easing function for smooth animation
+            const eased = this.easeInOutQuad(progress);
+
+            cells1.forEach(cell => {
+                cell.x = col1 * (config.matrix.cellSize + config.matrix.spacing) + distance * eased;
+            });
+
+            cells2.forEach(cell => {
+                cell.x = col2 * (config.matrix.cellSize + config.matrix.spacing) - distance * eased;
+            });
+        };
+
+        this.app.ticker.add(animate);
+    }
+
+    // Easing function for smooth animation
+    easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     }
 }
 
-// Swap columns 2 and 3
-function swapColumns() {
-    if (!isAnimating) {
-        isAnimating = true;
-        animationProgress = 0;
-        animationDirection = 1;
-        animate();
-    }
-}
+// Initialize
+const model = new MatrixModel(config.matrix.size);
+const view = new MatrixView(model, document.getElementById('pixi-container'));
 
-// Event listeners
-window.addEventListener('resize', () => {
-    resizeCanvas();
-    drawMatrix();
-});
-
-document.getElementById('swap-columns').addEventListener('click', swapColumns);
-
-// Initial setup
-resizeCanvas();
-drawMatrix(); 
+// Event handling
+document.getElementById('swap-columns').addEventListener('click', () => {
+    view.animateSwap(1, 2);
+    model.swapColumns(1, 2);
+}); 
