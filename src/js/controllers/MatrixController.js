@@ -68,6 +68,27 @@ export class MatrixController {
                 () => this.view.animateCenterColumnSwaps()
             ]);
         });
+
+        // Initialization handlers
+        document.getElementById('init-00').addEventListener('click', () => {
+            this.view.model.setCellsToOnes([[2, 0], [2, 1], [3, 0], [3, 1]]);
+            this.view.createCells();
+        });
+
+        document.getElementById('init-01').addEventListener('click', () => {
+            this.view.model.setCellsToOnes([[2, 2], [2, 3], [3, 2], [3, 3]]);
+            this.view.createCells();
+        });
+
+        document.getElementById('init-10').addEventListener('click', () => {
+            this.view.model.setCellsToOnes([[0, 0], [0, 1], [1, 0], [1, 1]]);
+            this.view.createCells();
+        });
+
+        document.getElementById('init-11').addEventListener('click', () => {
+            this.view.model.setCellsToOnes([[0, 2], [0, 3], [1, 2], [1, 3]]);
+            this.view.createCells();
+        });
     }
 
     setButtonsEnabled(enabled) {

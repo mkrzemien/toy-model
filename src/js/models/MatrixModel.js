@@ -32,4 +32,13 @@ export class MatrixModel {
     getSize() {
         return this.size;
     }
+
+    setCellsToOnes(cells) {
+        // Reset all cells to 0 first
+        this.data = Array(this.size).fill().map(() => Array(this.size).fill(0));
+        // Set specified cells to 1
+        for (const [row, col] of cells) {
+            this.data[row][col] = 1;
+        }
+    }
 } 
