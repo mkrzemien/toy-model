@@ -1,7 +1,6 @@
 export class MatrixController {
     constructor(view) {
         this.view = view;
-        this.setupEventListeners();
         this.actionMap = {
             'H0': () => this.chainAnimations([() => this.view.animateCenterColumnSwaps()]),
             'H1': () => this.chainAnimations([() => this.view.animateCenterRowSwaps()]),
@@ -55,93 +54,30 @@ export class MatrixController {
                 return Promise.resolve();
             }
         };
+        this.setupEventListeners();
     }
 
     setupEventListeners() {
-        document.getElementById('swap-columns-h').addEventListener('click', () => {
-            this.chainAnimations([() => this.view.animateCenterColumnSwaps()]);
-        });
-
-        document.getElementById('swap-rows-h').addEventListener('click', () => {
-            this.chainAnimations([() => this.view.animateCenterRowSwaps()]);
-        });
-
-        document.getElementById('swap-columns-z').addEventListener('click', () => {
-            this.chainAnimations([() => this.view.animateSideColumnSwaps()]);
-        });
-
-        document.getElementById('swap-rows-z').addEventListener('click', () => {
-            this.chainAnimations([() => this.view.animateSideRowSwaps()]);
-        });
-
-        document.getElementById('swap-columns-p').addEventListener('click', () => {
-            this.chainAnimations([() => this.view.animatePartialColumnSwaps()]);
-        });
-
-        document.getElementById('swap-rows-p').addEventListener('click', () => {
-            this.chainAnimations([() => this.view.animatePartialRowSwaps()]);
-        });
+        // Basic action handlers
+        document.getElementById('swap-columns-h').addEventListener('click', () => this.actionMap['H0']());
+        document.getElementById('swap-rows-h').addEventListener('click', () => this.actionMap['H1']());
+        document.getElementById('swap-columns-z').addEventListener('click', () => this.actionMap['Z0']());
+        document.getElementById('swap-rows-z').addEventListener('click', () => this.actionMap['Z1']());
+        document.getElementById('swap-columns-p').addEventListener('click', () => this.actionMap['P0']());
+        document.getElementById('swap-rows-p').addEventListener('click', () => this.actionMap['P1']());
 
         // Composite action handlers
-        document.getElementById('composite-cz').addEventListener('click', () => {
-            this.chainAnimations([
-                () => this.view.animatePartialColumnSwaps(),
-                () => this.view.animatePartialRowSwaps()
-            ]);
-        });
-
-        document.getElementById('composite-h').addEventListener('click', () => {
-            this.chainAnimations([
-                () => this.view.animateCenterColumnSwaps(),
-                () => this.view.animateCenterRowSwaps()
-            ]);
-        });
-
-        document.getElementById('composite-nx').addEventListener('click', () => {
-            this.chainAnimations([
-                () => this.view.animateCenterColumnSwaps(),
-                () => this.view.animateSideColumnSwaps(),
-                () => this.view.animateCenterColumnSwaps()
-            ]);
-        });
-
-        document.getElementById('composite-ny').addEventListener('click', () => {
-            this.chainAnimations([
-                () => this.view.animateCenterRowSwaps(),
-                () => this.view.animateSideRowSwaps(),
-                () => this.view.animateCenterRowSwaps()
-            ]);
-        });
-
-        document.getElementById('composite-cx').addEventListener('click', () => {
-            this.chainAnimations([
-                () => this.view.animateCenterColumnSwaps(),
-                () => this.view.animatePartialColumnSwaps(),
-                () => this.view.animatePartialRowSwaps(),
-                () => this.view.animateCenterColumnSwaps()
-            ]);
-        });
+        document.getElementById('composite-cz').addEventListener('click', () => this.actionMap['CZ']());
+        document.getElementById('composite-h').addEventListener('click', () => this.actionMap['HH']());
+        document.getElementById('composite-nx').addEventListener('click', () => this.actionMap['X0']());
+        document.getElementById('composite-ny').addEventListener('click', () => this.actionMap['X1']());
+        document.getElementById('composite-cx').addEventListener('click', () => this.actionMap['CX']());
 
         // Initialization handlers
-        document.getElementById('init-00').addEventListener('click', () => {
-            this.view.model.setCellsToOnes([[2, 0], [2, 1], [3, 0], [3, 1]]);
-            this.view.createCells();
-        });
-
-        document.getElementById('init-01').addEventListener('click', () => {
-            this.view.model.setCellsToOnes([[2, 2], [2, 3], [3, 2], [3, 3]]);
-            this.view.createCells();
-        });
-
-        document.getElementById('init-10').addEventListener('click', () => {
-            this.view.model.setCellsToOnes([[0, 0], [0, 1], [1, 0], [1, 1]]);
-            this.view.createCells();
-        });
-
-        document.getElementById('init-11').addEventListener('click', () => {
-            this.view.model.setCellsToOnes([[0, 2], [0, 3], [1, 2], [1, 3]]);
-            this.view.createCells();
-        });
+        document.getElementById('init-00').addEventListener('click', () => this.actionMap['00']());
+        document.getElementById('init-01').addEventListener('click', () => this.actionMap['01']());
+        document.getElementById('init-10').addEventListener('click', () => this.actionMap['10']());
+        document.getElementById('init-11').addEventListener('click', () => this.actionMap['11']());
 
         // Script execution handler
         document.getElementById('run-script').addEventListener('click', () => {
