@@ -20,15 +20,25 @@ export class MatrixController {
                 () => this.view.animateSideRowSwaps(),
                 () => this.view.animateCenterRowSwaps()
             ]),
-            'CZ': () => this.chainAnimations([
+            'CZ0': () => this.chainAnimations([
                 () => this.view.animatePartialColumnSwaps(),
                 () => this.view.animatePartialRowSwaps()
             ]),
-            'CX': () => this.chainAnimations([
+            'CZ1': () => this.chainAnimations([
+                () => this.view.animatePartialRowSwaps(),
+                () => this.view.animatePartialColumnSwaps()
+            ]),
+            'CX0': () => this.chainAnimations([
                 () => this.view.animateCenterColumnSwaps(),
                 () => this.view.animatePartialColumnSwaps(),
                 () => this.view.animatePartialRowSwaps(),
                 () => this.view.animateCenterColumnSwaps()
+            ]),
+            'CX1': () => this.chainAnimations([
+                () => this.view.animateCenterRowSwaps(),
+                () => this.view.animatePartialRowSwaps(),
+                () => this.view.animatePartialColumnSwaps(),
+                () => this.view.animateCenterRowSwaps()
             ]),
             'HH': () => this.chainAnimations([
                 () => this.view.animateCenterColumnSwaps(),
@@ -77,11 +87,13 @@ export class MatrixController {
         document.getElementById('swap-rows-p').addEventListener('click', () => this.actionMap['P1']());
 
         // Composite action handlers
-        document.getElementById('composite-cz').addEventListener('click', () => this.actionMap['CZ']());
+        document.getElementById('composite-columns-x').addEventListener('click', () => this.actionMap['X0']());
+        document.getElementById('composite-rows-x').addEventListener('click', () => this.actionMap['X1']());
+        document.getElementById('composite-columns-cx').addEventListener('click', () => this.actionMap['CX0']());
+        document.getElementById('composite-rows-cx').addEventListener('click', () => this.actionMap['CX1']());
+        document.getElementById('composite-columns-cz').addEventListener('click', () => this.actionMap['CZ0']());
+        document.getElementById('composite-rows-cz').addEventListener('click', () => this.actionMap['CZ1']());
         document.getElementById('composite-h').addEventListener('click', () => this.actionMap['HH']());
-        document.getElementById('composite-nx').addEventListener('click', () => this.actionMap['X0']());
-        document.getElementById('composite-ny').addEventListener('click', () => this.actionMap['X1']());
-        document.getElementById('composite-cx').addEventListener('click', () => this.actionMap['CX']());
 
         // Initialization handlers
         document.getElementById('init-00').addEventListener('click', () => this.actionMap['00']());
