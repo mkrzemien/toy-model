@@ -407,19 +407,9 @@ const view = new MatrixView(model, document.getElementById('pixi-container'));
 
 // Button state management
 function setButtonsEnabled(enabled) {
-    const buttons = [
-        'swap-columns-h',
-        'swap-rows-h',
-        'swap-columns-z',
-        'swap-rows-z',
-        'swap-columns-p',
-        'swap-rows-p',
-        'composite-cz'
-    ];
-    buttons.forEach(id => {
-        const button = document.getElementById(id);
-        button.disabled = !enabled;
-    });
+    const sidePanel = document.querySelector('.side-panel');
+    sidePanel.style.pointerEvents = enabled ? 'auto' : 'none';
+    sidePanel.style.cursor = enabled ? 'auto' : 'wait';
 }
 
 // Utility function for chaining animations with pauses
