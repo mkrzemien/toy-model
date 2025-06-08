@@ -1,0 +1,17 @@
+{
+  "name": "toy-model",
+  "version": "1.0.0",
+  "description": "A simple 2D graphics demo with animated square movement",
+  "main": "app.js",
+  "scripts": {
+    "start": "browser-sync start --server --files \"*.html, *.js, *.css\" --port 8000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["demo", "2d", "graphics", "animation"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "browser-sync": "^2.29.3"
+  }
+}
