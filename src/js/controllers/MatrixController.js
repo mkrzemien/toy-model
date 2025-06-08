@@ -98,34 +98,74 @@ export class MatrixController {
     async executeScript() {
         const scriptInputElem = document.getElementById('script-input');
         const scriptInput = scriptInputElem.value;
-        const actions = scriptInput.split(/[\s,;]+/).filter(action => action.trim());
+        const actions = this.parseActions(scriptInput);
+        
+        if (!this.validateActions(actions, scriptInputElem)) {
+            return;
+        }
+
+        try {
+            this.setButtonsEnabled(false);
+            await this.executeActions(actions, scriptInputElem);
+        } finally {
+            this.setButtonsEnabled(true);
+            this.clearHighlightedAction(scriptInputElem);
+        }
+    }
+
+    parseActions(scriptInput) {
+        return scriptInput.split(/[\s,;]+/).filter(action => action.trim());
+    }
+
+    validateActions(actions, scriptInputElem) {
         const validationMessage = document.getElementById('validation-message');
         
         if (actions.length === 0) {
-            validationMessage.textContent = 'Enter at least one action';
-            validationMessage.classList.add('show');
-            scriptInputElem.classList.add('error');
-            return;
+            this.showValidationError('Enter at least one action', scriptInputElem, validationMessage);
+            return false;
         }
 
         const invalidActions = actions.filter(action => !this.actionMap[action]);
         if (invalidActions.length > 0) {
-            validationMessage.textContent = `Invalid actions: ${invalidActions.join(', ')}`;
-            validationMessage.classList.add('show');
-            scriptInputElem.classList.add('error');
-            return;
+            this.showValidationError(`Invalid actions: ${invalidActions.join(', ')}`, scriptInputElem, validationMessage);
+            return false;
         }
 
+        this.clearValidationError(scriptInputElem, validationMessage);
+        return true;
+    }
+
+    showValidationError(message, scriptInputElem, validationMessage) {
+        validationMessage.textContent = message;
+        validationMessage.classList.add('show');
+        scriptInputElem.classList.add('error');
+    }
+
+    clearValidationError(scriptInputElem, validationMessage) {
         validationMessage.classList.remove('show');
         scriptInputElem.classList.remove('error');
-        try {
-            this.setButtonsEnabled(false);
-            for (const action of actions) {
-                await this.actionMap[action]();
-            }
-        } finally {
-            this.setButtonsEnabled(true);
+    }
+
+    async executeActions(actions, scriptInputElem) {
+        let currentPosition = 0;
+        for (const action of actions) {
+            currentPosition = this.highlightCurrentAction(action, scriptInputElem, currentPosition);
+            await this.actionMap[action]();
         }
+    }
+
+    highlightCurrentAction(action, scriptInputElem, startPosition) {
+        const actionIndex = scriptInputElem.value.indexOf(action, startPosition);
+        if (actionIndex !== -1) {
+            scriptInputElem.setSelectionRange(actionIndex, actionIndex + action.length);
+            scriptInputElem.focus();
+            return actionIndex + action.length;
+        }
+        return startPosition;
+    }
+
+    clearHighlightedAction(scriptInputElem) {
+        scriptInputElem.setSelectionRange(0, 0);
     }
 
     setButtonsEnabled(enabled) {
