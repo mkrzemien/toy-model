@@ -3,7 +3,7 @@ const config = {
     matrix: {
         size: 4,
         cellSize: 50,
-        spacing: 5,
+        spacing: 0,
         padding: 100
     },
     colors: {
@@ -15,7 +15,7 @@ const config = {
         }
     },
     animation: {
-        duration: 0.5 // seconds
+        duration: 0.3 // seconds
     }
 };
 
@@ -32,6 +32,10 @@ class MatrixModel {
         for (let i = 0; i < this.size; i++) {
             [this.data[i][col1], this.data[i][col2]] = [this.data[i][col2], this.data[i][col1]];
         }
+    }
+
+    swapRows(row1, row2) {
+        [this.data[row1], this.data[row2]] = [this.data[row2], this.data[row1]];
     }
 }
 
@@ -149,6 +153,123 @@ class MatrixView {
         this.app.ticker.add(animate);
     }
 
+    animateRowSwap(row1, row2) {
+        const cells1 = this.cells[row1];
+        const cells2 = this.cells[row2];
+        const distance = config.matrix.cellSize + config.matrix.spacing;
+
+        // Animate using PIXI's ticker
+        let progress = 0;
+        const animate = (delta) => {
+            progress += delta / 60 / config.animation.duration;
+            
+            if (progress >= 1) {
+                progress = 1;
+                this.app.ticker.remove(animate);
+                
+                // Update the model
+                this.model.swapRows(row1, row2);
+                
+                // Redraw the entire matrix
+                this.createCells();
+                this.centerCellsContainer();
+            } else {
+                // Easing function for smooth animation
+                const eased = this.easeInOutQuad(progress);
+
+                cells1.forEach(cell => {
+                    cell.y = row1 * (config.matrix.cellSize + config.matrix.spacing) + distance * eased;
+                });
+
+                cells2.forEach(cell => {
+                    cell.y = row2 * (config.matrix.cellSize + config.matrix.spacing) - distance * eased;
+                });
+            }
+        };
+
+        this.app.ticker.add(animate);
+    }
+
+    animateMultipleColumnSwaps(swaps) {
+        const cells = swaps.map(([col1, col2]) => ({
+            col1: this.cells.map(row => row[col1]),
+            col2: this.cells.map(row => row[col2]),
+            distance: config.matrix.cellSize + config.matrix.spacing,
+            col1Pos: col1 * (config.matrix.cellSize + config.matrix.spacing),
+            col2Pos: col2 * (config.matrix.cellSize + config.matrix.spacing)
+        }));
+
+        let progress = 0;
+        const animate = (delta) => {
+            progress += delta / 60 / config.animation.duration;
+            
+            if (progress >= 1) {
+                progress = 1;
+                this.app.ticker.remove(animate);
+                
+                // Update the model
+                swaps.forEach(([col1, col2]) => this.model.swapColumns(col1, col2));
+                
+                // Redraw the entire matrix
+                this.createCells();
+                this.centerCellsContainer();
+            } else {
+                const eased = this.easeInOutQuad(progress);
+
+                cells.forEach(({ col1, col2, distance, col1Pos, col2Pos }) => {
+                    col1.forEach(cell => {
+                        cell.x = col1Pos + distance * eased;
+                    });
+                    col2.forEach(cell => {
+                        cell.x = col2Pos - distance * eased;
+                    });
+                });
+            }
+        };
+
+        this.app.ticker.add(animate);
+    }
+
+    animateMultipleRowSwaps(swaps) {
+        const cells = swaps.map(([row1, row2]) => ({
+            row1: this.cells[row1],
+            row2: this.cells[row2],
+            distance: config.matrix.cellSize + config.matrix.spacing,
+            row1Pos: row1 * (config.matrix.cellSize + config.matrix.spacing),
+            row2Pos: row2 * (config.matrix.cellSize + config.matrix.spacing)
+        }));
+
+        let progress = 0;
+        const animate = (delta) => {
+            progress += delta / 60 / config.animation.duration;
+            
+            if (progress >= 1) {
+                progress = 1;
+                this.app.ticker.remove(animate);
+                
+                // Update the model
+                swaps.forEach(([row1, row2]) => this.model.swapRows(row1, row2));
+                
+                // Redraw the entire matrix
+                this.createCells();
+                this.centerCellsContainer();
+            } else {
+                const eased = this.easeInOutQuad(progress);
+
+                cells.forEach(({ row1, row2, distance, row1Pos, row2Pos }) => {
+                    row1.forEach(cell => {
+                        cell.y = row1Pos + distance * eased;
+                    });
+                    row2.forEach(cell => {
+                        cell.y = row2Pos - distance * eased;
+                    });
+                });
+            }
+        };
+
+        this.app.ticker.add(animate);
+    }
+
     // Easing function for smooth animation
     easeInOutQuad(t) {
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
@@ -162,4 +283,16 @@ const view = new MatrixView(model, document.getElementById('pixi-container'));
 // Event handling
 document.getElementById('swap-columns').addEventListener('click', () => {
     view.animateSwap(1, 2);
+});
+
+document.getElementById('swap-rows').addEventListener('click', () => {
+    view.animateRowSwap(1, 2);
+});
+
+document.getElementById('swap-columns-pairs').addEventListener('click', () => {
+    view.animateMultipleColumnSwaps([[0, 1], [2, 3]]);
+});
+
+document.getElementById('swap-rows-pairs').addEventListener('click', () => {
+    view.animateMultipleRowSwaps([[0, 1], [2, 3]]);
 }); 
