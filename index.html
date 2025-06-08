@@ -4,36 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D Graphics Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-light: #64B5F6;
+            --primary-dark: #1976D2;
+            --accent-color: #FF4081;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FAFAFA;
+            --surface: #FFFFFF;
+            --error: #B00020;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 20px;
             display: flex;
             min-height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: var(--background);
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-primary);
         }
         
         .container {
             display: flex;
             width: 100%;
-            gap: 20px;
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
         .side-panel {
-            width: 200px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
+            width: 240px;
+            background-color: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
         
         .main-area {
             flex: 1;
-            background-color: white;
-            border-radius: 8px;
+            background-color: var(--surface);
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             position: relative;
+            min-height: 500px;
+            overflow: hidden;
         }
         
         canvas {
@@ -41,30 +68,69 @@
             height: 100%;
         }
         
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
         button {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
-            background-color: #4CAF50;
+            border-radius: 8px;
+            background-color: var(--primary-color);
             color: white;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         button:hover {
-            background-color: #45a049;
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .panel-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="side-panel">
-            <button id="up">Up</button>
-            <button id="down">Down</button>
-            <button id="left">Left</button>
-            <button id="right">Right</button>
+            <div>
+                <h1 class="panel-title">Controls</h1>
+                <p class="panel-subtitle">Move the square using the buttons below</p>
+            </div>
+            <div class="button-group">
+                <button id="up">↑ Up</button>
+                <button id="down">↓ Down</button>
+                <button id="left">← Left</button>
+                <button id="right">→ Right</button>
+            </div>
         </div>
         <div class="main-area">
             <canvas id="canvas"></canvas>
