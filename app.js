@@ -24,8 +24,11 @@ class MatrixModel {
     constructor(size) {
         this.size = size;
         this.data = Array(size).fill().map(() => Array(size).fill(0));
-        // Initialize a single cell in the second column to 1
-        this.data[1][1] = 1; // Set the middle cell in the second column to 1
+        // Initialize
+        this.data[2][0] = 1;
+        this.data[2][1] = 1;
+        this.data[3][0] = 1;
+        this.data[3][1] = 1;
     }
 
     swapColumns(col1, col2) {
