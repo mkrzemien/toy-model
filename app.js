@@ -408,13 +408,13 @@ const view = new MatrixView(model, document.getElementById('pixi-container'));
 // Button state management
 function setButtonsEnabled(enabled) {
     const buttons = [
-        'swap-columns',
-        'swap-rows',
-        'swap-columns-pairs',
-        'swap-rows-pairs',
-        'swap-columns-partial',
-        'swap-rows-partial',
-        'swap-partial-sequence'
+        'swap-columns-h',
+        'swap-rows-h',
+        'swap-columns-z',
+        'swap-rows-z',
+        'swap-columns-p',
+        'swap-rows-p',
+        'composite-cz'
     ];
     buttons.forEach(id => {
         const button = document.getElementById(id);
@@ -423,7 +423,7 @@ function setButtonsEnabled(enabled) {
 }
 
 // Utility function for chaining animations with pauses
-async function chainAnimations(animations, pauseDuration = 0.2) {
+async function chainAnimations(animations, pauseDuration = 0.05) {
     try {
         setButtonsEnabled(false);
         for (const animation of animations) {
@@ -436,31 +436,31 @@ async function chainAnimations(animations, pauseDuration = 0.2) {
 }
 
 // Event handling
-document.getElementById('swap-columns').addEventListener('click', () => {
+document.getElementById('swap-columns-h').addEventListener('click', () => {
     chainAnimations([() => view.animateSwap(1, 2)]);
 });
 
-document.getElementById('swap-rows').addEventListener('click', () => {
+document.getElementById('swap-rows-h').addEventListener('click', () => {
     chainAnimations([() => view.animateRowSwap(1, 2)]);
 });
 
-document.getElementById('swap-columns-pairs').addEventListener('click', () => {
+document.getElementById('swap-columns-z').addEventListener('click', () => {
     chainAnimations([() => view.animateMultipleColumnSwaps([[0, 1], [2, 3]])]);
 });
 
-document.getElementById('swap-rows-pairs').addEventListener('click', () => {
+document.getElementById('swap-rows-z').addEventListener('click', () => {
     chainAnimations([() => view.animateMultipleRowSwaps([[0, 1], [2, 3]])]);
 });
 
-document.getElementById('swap-columns-partial').addEventListener('click', () => {
+document.getElementById('swap-columns-p').addEventListener('click', () => {
     chainAnimations([() => view.animatePartialColumnSwaps()]);
 });
 
-document.getElementById('swap-rows-partial').addEventListener('click', () => {
+document.getElementById('swap-rows-p').addEventListener('click', () => {
     chainAnimations([() => view.animatePartialRowSwaps()]);
 });
 
-document.getElementById('swap-partial-sequence').addEventListener('click', () => {
+document.getElementById('composite-cz').addEventListener('click', () => {
     chainAnimations([
         () => view.animatePartialColumnSwaps(),
         () => view.animatePartialRowSwaps()
