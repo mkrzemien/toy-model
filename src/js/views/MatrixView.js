@@ -77,73 +77,43 @@ export class MatrixView {
 
     async animateCenterColumnSwaps() {
         const cellPairs = [[0, 1], [1, 1], [2, 1], [3, 1]];
-        await this.animationManager.animateCellColumnSwaps(
-            this.cells,
-            this.model,
-            cellPairs
-        );
+        await this.animationManager.animateCellColumnSwaps(this.cells, cellPairs);
         this.model.swapCellsByColumns(cellPairs);
         this.createCells();
-        this.centerCellsContainer();
     }
 
     async animateCenterRowSwaps() {
         const cellPairs = [[1, 0], [1, 1], [1, 2], [1, 3]];
-        await this.animationManager.animateCellRowSwaps(
-            this.cells,
-            this.model,
-            cellPairs
-        );
+        await this.animationManager.animateCellRowSwaps(this.cells, cellPairs);
         this.model.swapCellsByRows(cellPairs);
         this.createCells();
-        this.centerCellsContainer();
     }
 
     async animateSideColumnSwaps() {
         const cellPairs = [[0, 0], [1, 0], [2, 0], [3, 0], [0, 2], [1, 2], [2, 2], [3, 2]];
-        await this.animationManager.animateCellColumnSwaps(
-            this.cells,
-            this.model,
-            cellPairs
-        );
+        await this.animationManager.animateCellColumnSwaps(this.cells, cellPairs);
         this.model.swapCellsByColumns(cellPairs);
         this.createCells();
-        this.centerCellsContainer();
     }
 
     async animateSideRowSwaps() {
         const cellPairs = [[0, 0], [0, 1], [0, 2], [0, 3], [2, 0], [2, 1], [2, 2], [2, 3]];
-        await this.animationManager.animateCellRowSwaps(
-            this.cells,
-            this.model,
-            cellPairs
-        );
+        await this.animationManager.animateCellRowSwaps(this.cells, cellPairs);
         this.model.swapCellsByRows(cellPairs);
         this.createCells();
-        this.centerCellsContainer();
     }
 
     async animatePartialColumnSwaps() {
         const cellPairs = [[0, 0], [1, 0], [0, 2], [1, 2]];
-        await this.animationManager.animateCellColumnSwaps(
-            this.cells,
-            this.model,
-            cellPairs
-        );
+        await this.animationManager.animateCellColumnSwaps(this.cells, cellPairs);
         this.model.swapCellsByColumns(cellPairs);
         this.createCells();
-        this.centerCellsContainer();
     }
 
     async animatePartialRowSwaps() {
         const cellPairs = [[0, 2], [0, 3], [2, 2], [2, 3]];
-        await this.animationManager.animateCellRowSwaps(
-            this.cells,
-            this.model,
-            cellPairs
-        );
+        await this.animationManager.animateCellRowSwaps(this.cells, cellPairs);
         this.model.swapCellsByRows(cellPairs);
         this.createCells();
-        this.centerCellsContainer();
     }
 } 

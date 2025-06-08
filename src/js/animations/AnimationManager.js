@@ -9,7 +9,7 @@ export class AnimationManager {
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     }
 
-    async animateCellColumnSwaps(cells, model, cellPairs) {
+    async animateCellColumnSwaps(cells, cellPairs) {
         return new Promise(resolve => {
             const cells1 = [];
             const cells2 = [];
@@ -17,15 +17,13 @@ export class AnimationManager {
             const startPositions = [];
 
             cellPairs.forEach(([row, col]) => {
-                if (col < model.getSize() - 1) {
-                    cells1.push(cells[row][col]);
-                    cells2.push(cells[row][col + 1]);
-                    distances.push(config.matrix.cellSize + config.matrix.spacing);
-                    startPositions.push({
-                        x1: col * (config.matrix.cellSize + config.matrix.spacing),
-                        x2: (col + 1) * (config.matrix.cellSize + config.matrix.spacing)
-                    });
-                }
+                cells1.push(cells[row][col]);
+                cells2.push(cells[row][col + 1]);
+                distances.push(config.matrix.cellSize + config.matrix.spacing);
+                startPositions.push({
+                    x1: col * (config.matrix.cellSize + config.matrix.spacing),
+                    x2: (col + 1) * (config.matrix.cellSize + config.matrix.spacing)
+                });
             });
 
             let progress = 0;
@@ -53,7 +51,7 @@ export class AnimationManager {
         });
     }
 
-    async animateCellRowSwaps(cells, model, cellPairs) {
+    async animateCellRowSwaps(cells, cellPairs) {
         return new Promise(resolve => {
             const cells1 = [];
             const cells2 = [];
@@ -61,15 +59,13 @@ export class AnimationManager {
             const startPositions = [];
 
             cellPairs.forEach(([row, col]) => {
-                if (row < model.getSize() - 1) {
-                    cells1.push(cells[row][col]);
-                    cells2.push(cells[row + 1][col]);
-                    distances.push(config.matrix.cellSize + config.matrix.spacing);
-                    startPositions.push({
-                        y1: row * (config.matrix.cellSize + config.matrix.spacing),
-                        y2: (row + 1) * (config.matrix.cellSize + config.matrix.spacing)
-                    });
-                }
+                cells1.push(cells[row][col]);
+                cells2.push(cells[row + 1][col]);
+                distances.push(config.matrix.cellSize + config.matrix.spacing);
+                startPositions.push({
+                    y1: row * (config.matrix.cellSize + config.matrix.spacing),
+                    y2: (row + 1) * (config.matrix.cellSize + config.matrix.spacing)
+                });
             });
 
             let progress = 0;
