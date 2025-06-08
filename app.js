@@ -395,16 +395,6 @@ class MatrixView {
         });
     }
 
-    animatePartialSequence() {
-        return new Promise(resolve => {
-            // First run the column swap and wait for it to complete
-            this.animatePartialColumnSwaps().then(() => {
-                // After column swap completes, run the row swap
-                this.animatePartialRowSwaps().then(resolve);
-            });
-        });
-    }
-
     // Easing function for smooth animation
     easeInOutQuad(t) {
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
@@ -432,93 +422,80 @@ function setButtonsEnabled(enabled) {
     });
 }
 
-// Event handling
-document.getElementById('swap-columns').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animateSwap(1, 2);
-    setButtonsEnabled(true);
-});
-
-document.getElementById('swap-rows').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animateRowSwap(1, 2);
-    setButtonsEnabled(true);
-});
-
-document.getElementById('swap-columns-pairs').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animateMultipleColumnSwaps([[0, 1], [2, 3]]);
-    setButtonsEnabled(true);
-});
-
-document.getElementById('swap-rows-pairs').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animateMultipleRowSwaps([[0, 1], [2, 3]]);
-    setButtonsEnabled(true);
-});
-
-document.getElementById('swap-columns-partial').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animatePartialColumnSwaps();
-    setButtonsEnabled(true);
-});
-
-document.getElementById('swap-rows-partial').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animatePartialRowSwaps();
-    setButtonsEnabled(true);
-});
-
-document.getElementById('swap-partial-sequence').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await view.animatePartialSequence();
-    setButtonsEnabled(true);
-});
-
 // Utility function for chaining animations with pauses
 async function chainAnimations(animations, pauseDuration = 0.2) {
-    for (const animation of animations) {
-        await animation();
-        await new Promise(resolve => setTimeout(resolve, pauseDuration * 1000));
+    try {
+        setButtonsEnabled(false);
+        for (const animation of animations) {
+            await animation();
+            await new Promise(resolve => setTimeout(resolve, pauseDuration * 1000));
+        }
+    } finally {
+        setButtonsEnabled(true);
     }
 }
 
+// Event handling
+document.getElementById('swap-columns').addEventListener('click', () => {
+    chainAnimations([() => view.animateSwap(1, 2)]);
+});
+
+document.getElementById('swap-rows').addEventListener('click', () => {
+    chainAnimations([() => view.animateRowSwap(1, 2)]);
+});
+
+document.getElementById('swap-columns-pairs').addEventListener('click', () => {
+    chainAnimations([() => view.animateMultipleColumnSwaps([[0, 1], [2, 3]])]);
+});
+
+document.getElementById('swap-rows-pairs').addEventListener('click', () => {
+    chainAnimations([() => view.animateMultipleRowSwaps([[0, 1], [2, 3]])]);
+});
+
+document.getElementById('swap-columns-partial').addEventListener('click', () => {
+    chainAnimations([() => view.animatePartialColumnSwaps()]);
+});
+
+document.getElementById('swap-rows-partial').addEventListener('click', () => {
+    chainAnimations([() => view.animatePartialRowSwaps()]);
+});
+
+document.getElementById('swap-partial-sequence').addEventListener('click', () => {
+    chainAnimations([
+        () => view.animatePartialColumnSwaps(),
+        () => view.animatePartialRowSwaps()
+    ]);
+});
+
 // Composite action handlers
-document.getElementById('composite-h').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await chainAnimations([
+document.getElementById('composite-h').addEventListener('click', () => {
+    chainAnimations([
         () => view.animateSwap(1, 2),
         () => view.animateRowSwap(1, 2)
     ]);
-    setButtonsEnabled(true);
 });
 
-document.getElementById('composite-nx').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await chainAnimations([
+document.getElementById('composite-nx').addEventListener('click', () => {
+    chainAnimations([
         () => view.animateSwap(1, 2),
         () => view.animateMultipleColumnSwaps([[0, 1], [2, 3]]),
         () => view.animateSwap(1, 2)
     ]);
-    setButtonsEnabled(true);
 });
 
-document.getElementById('composite-ny').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await chainAnimations([
+document.getElementById('composite-ny').addEventListener('click', () => {
+    chainAnimations([
         () => view.animateRowSwap(1, 2),
         () => view.animateMultipleRowSwaps([[0, 1], [2, 3]]),
         () => view.animateRowSwap(1, 2)
     ]);
-    setButtonsEnabled(true);
 });
 
-document.getElementById('composite-cx').addEventListener('click', async () => {
-    setButtonsEnabled(false);
-    await chainAnimations([
+document.getElementById('composite-cx').addEventListener('click', () => {
+    chainAnimations([
         () => view.animateSwap(1, 2),
-        () => view.animatePartialSequence(),
+        () => view.animatePartialColumnSwaps(),
+        () => view.animatePartialRowSwaps(),
         () => view.animateSwap(1, 2)
     ]);
-    setButtonsEnabled(true);
 }); 
