@@ -1,6 +1,8 @@
 export class MatrixController {
     constructor(view) {
         this.view = view;
+        this.pauseAfterInit = 0.5;
+        this.pauseDuration = 0.05;
         this.actionMap = {
             'H0': () => this.chainAnimations([() => this.view.animateCenterColumnSwaps()]),
             'H1': () => this.chainAnimations([() => this.view.animateCenterRowSwaps()]),
@@ -33,26 +35,34 @@ export class MatrixController {
                 () => this.view.animateCenterRowSwaps()
             ]),
             // Initialization actions
-            '00': () => {
-                this.view.model.setCellsToOnes([[2, 0], [2, 1], [3, 0], [3, 1]]);
-                this.view.createCells();
-                return Promise.resolve();
-            },
-            '01': () => {
-                this.view.model.setCellsToOnes([[2, 2], [2, 3], [3, 2], [3, 3]]);
-                this.view.createCells();
-                return Promise.resolve();
-            },
-            '10': () => {
-                this.view.model.setCellsToOnes([[0, 0], [0, 1], [1, 0], [1, 1]]);
-                this.view.createCells();
-                return Promise.resolve();
-            },
-            '11': () => {
-                this.view.model.setCellsToOnes([[0, 2], [0, 3], [1, 2], [1, 3]]);
-                this.view.createCells();
-                return Promise.resolve();
-            }
+            '00': () => this.chainAnimations([
+                () => {
+                    this.view.model.setCellsToOnes([[2, 0], [2, 1], [3, 0], [3, 1]]);
+                    this.view.createCells();
+                    return Promise.resolve();
+                }
+            ], this.pauseAfterInit),
+            '01': () => this.chainAnimations([
+                () => {
+                    this.view.model.setCellsToOnes([[2, 2], [2, 3], [3, 2], [3, 3]]);
+                    this.view.createCells();
+                    return Promise.resolve();
+                }
+            ], this.pauseAfterInit),
+            '10': () => this.chainAnimations([
+                () => {
+                    this.view.model.setCellsToOnes([[0, 0], [0, 1], [1, 0], [1, 1]]);
+                    this.view.createCells();
+                    return Promise.resolve();
+                }
+            ], this.pauseAfterInit),
+            '11': () => this.chainAnimations([
+                () => {
+                    this.view.model.setCellsToOnes([[0, 2], [0, 3], [1, 2], [1, 3]]);
+                    this.view.createCells();
+                    return Promise.resolve();
+                }
+            ], this.pauseAfterInit)
         };
         this.setupEventListeners();
     }
@@ -116,12 +126,12 @@ export class MatrixController {
         sidePanel.style.cursor = enabled ? 'auto' : 'wait';
     }
 
-    async chainAnimations(animations, pauseDuration = 0.05) {
+    async chainAnimations(animations) {
         try {
             this.setButtonsEnabled(false);
             for (const animation of animations) {
                 await animation();
-                await new Promise(resolve => setTimeout(resolve, pauseDuration * 1000));
+                await new Promise(resolve => setTimeout(resolve, this.pauseDuration * 1000));
             }
         } finally {
             this.setButtonsEnabled(true);
