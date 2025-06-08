@@ -158,6 +158,22 @@
                 <button id="init-00">00</button>
                 <button id="init-01">01</button>
             </div>
+            <div>
+                <h1 class="panel-title">Script Execution</h1>
+                <p class="panel-subtitle">Run a sequence of actions</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <textarea id="script-input" placeholder="Enter actions (e.g. HX ZX HX)" style="
+                    width: 100%;
+                    height: 80px;
+                    padding: 8px;
+                    border: 1px solid #ccc;
+                    border-radius: 8px;
+                    font-family: 'Roboto', sans-serif;
+                    resize: vertical;
+                "></textarea>
+                <button id="run-script" style="width: 100%;">Run Script</button>
+            </div>
         </div>
         <div class="main-area">
             <div id="pixi-container"></div>

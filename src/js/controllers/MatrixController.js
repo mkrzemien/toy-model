@@ -2,6 +2,59 @@ export class MatrixController {
     constructor(view) {
         this.view = view;
         this.setupEventListeners();
+        this.actionMap = {
+            'H0': () => this.chainAnimations([() => this.view.animateCenterColumnSwaps()]),
+            'H1': () => this.chainAnimations([() => this.view.animateCenterRowSwaps()]),
+            'Z0': () => this.chainAnimations([() => this.view.animateSideColumnSwaps()]),
+            'Z1': () => this.chainAnimations([() => this.view.animateSideRowSwaps()]),
+            'P0': () => this.chainAnimations([() => this.view.animatePartialColumnSwaps()]),
+            'P1': () => this.chainAnimations([() => this.view.animatePartialRowSwaps()]),
+            'X0': () => this.chainAnimations([
+                () => this.view.animateCenterColumnSwaps(),
+                () => this.view.animateSideColumnSwaps(),
+                () => this.view.animateCenterColumnSwaps()
+            ]),
+            'X1': () => this.chainAnimations([
+                () => this.view.animateCenterRowSwaps(),
+                () => this.view.animateSideRowSwaps(),
+                () => this.view.animateCenterRowSwaps()
+            ]),
+            'CZ': () => this.chainAnimations([
+                () => this.view.animatePartialColumnSwaps(),
+                () => this.view.animatePartialRowSwaps()
+            ]),
+            'CX': () => this.chainAnimations([
+                () => this.view.animateCenterColumnSwaps(),
+                () => this.view.animatePartialColumnSwaps(),
+                () => this.view.animatePartialRowSwaps(),
+                () => this.view.animateCenterColumnSwaps()
+            ]),
+            'HH': () => this.chainAnimations([
+                () => this.view.animateCenterColumnSwaps(),
+                () => this.view.animateCenterRowSwaps()
+            ]),
+            // Initialization actions
+            '00': () => {
+                this.view.model.setCellsToOnes([[2, 0], [2, 1], [3, 0], [3, 1]]);
+                this.view.createCells();
+                return Promise.resolve();
+            },
+            '01': () => {
+                this.view.model.setCellsToOnes([[2, 2], [2, 3], [3, 2], [3, 3]]);
+                this.view.createCells();
+                return Promise.resolve();
+            },
+            '10': () => {
+                this.view.model.setCellsToOnes([[0, 0], [0, 1], [1, 0], [1, 1]]);
+                this.view.createCells();
+                return Promise.resolve();
+            },
+            '11': () => {
+                this.view.model.setCellsToOnes([[0, 2], [0, 3], [1, 2], [1, 3]]);
+                this.view.createCells();
+                return Promise.resolve();
+            }
+        };
     }
 
     setupEventListeners() {
@@ -89,6 +142,36 @@ export class MatrixController {
             this.view.model.setCellsToOnes([[0, 2], [0, 3], [1, 2], [1, 3]]);
             this.view.createCells();
         });
+
+        // Script execution handler
+        document.getElementById('run-script').addEventListener('click', () => {
+            this.executeScript();
+        });
+    }
+
+    async executeScript() {
+        const scriptInput = document.getElementById('script-input').value;
+        const actions = scriptInput.split(/[\s,;]+/).filter(action => action.trim());
+        
+        if (actions.length === 0) {
+            alert('Please enter at least one action');
+            return;
+        }
+
+        const invalidActions = actions.filter(action => !this.actionMap[action]);
+        if (invalidActions.length > 0) {
+            alert(`Invalid actions found: ${invalidActions.join(', ')}`);
+            return;
+        }
+
+        try {
+            this.setButtonsEnabled(false);
+            for (const action of actions) {
+                await this.actionMap[action]();
+            }
+        } finally {
+            this.setButtonsEnabled(true);
+        }
     }
 
     setButtonsEnabled(enabled) {
